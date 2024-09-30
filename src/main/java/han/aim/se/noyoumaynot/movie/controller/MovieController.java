@@ -29,6 +29,7 @@ public class MovieController {
     public ArrayList<Movie> getAllMovies(HttpServletRequest request) throws Exception {
         String token = request.getHeader("Authorization");
         authenticate(token);
+        System.out.print("Movies shown!");
         return movieService.getMovieList();
     }
 

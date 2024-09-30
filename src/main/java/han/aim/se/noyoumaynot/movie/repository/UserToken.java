@@ -13,4 +13,12 @@ public class UserToken {
         this.expiresIn = TOKENVALIDTIME;
         this.token = UUID.randomUUID().toString();
     }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getUsername() {
+        return username;
+    }
 }
