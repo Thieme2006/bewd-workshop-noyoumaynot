@@ -14,7 +14,7 @@ public class AuthenticationService {
   }
 
   public boolean isValidToken(String token) {
-    return false;
+    return true;
   }
 
   public String getUsername(String token) {

@@ -26,22 +26,22 @@ public class MovieController {
     }
 
     @GetMapping
-    public ArrayList<Movie> getAllMovies(HttpServletRequest request) {
+    public ArrayList<Movie> getAllMovies(HttpServletRequest request) throws Exception {
         String token = request.getHeader("Authorization");
         authenticate(token);
         return movieService.getMovieList();
     }
 
     @GetMapping("/show")
-    public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request) {
+    public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request) throws Exception {
             String token = request.getHeader("Authorization");
         authenticate(token);
-        Movie movie = movieService.getMovieById(id);
+            Movie movie = movieService.getMovieById(id);
             return movie;
     }
 
     @PostMapping("/add")
-    public Movie addMovie(@RequestBody Movie movie, HttpServletRequest request) {
+    public Movie addMovie(@RequestBody Movie movie, HttpServletRequest request) throws Exception {
         String token = request.getHeader("Authorization");
         authenticate(token);
 
