@@ -16,6 +16,8 @@ import java.util.ArrayList;
 public class MovieController {
     private final MovieService movieService;
     private final AuthenticationService authenticationService;
+    private String username = "Ghost_Unknown";
+    private String password = "Testing12342";
 
     @Autowired
     public MovieController(MovieService movieService, AuthenticationService authenticationService) {
@@ -24,25 +26,33 @@ public class MovieController {
     }
 
     @GetMapping
-    public ArrayList<Movie> getAllMovies() {
+    public ArrayList<Movie> getAllMovies(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        authenticate(token);
         return movieService.getMovieList();
     }
 
     @GetMapping("/show")
-    public Movie getMovieById(@RequestParam("id") String id) {
-
-            Movie movie = movieService.getMovieById(id);
+    public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request) {
+            String token = request.getHeader("Authorization");
+        authenticate(token);
+        Movie movie = movieService.getMovieById(id);
             return movie;
     }
 
     @PostMapping("/add")
-    public Movie addMovie(@RequestBody Movie movie) {
+    public Movie addMovie(@RequestBody Movie movie, HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        authenticate(token);
+
         movieService.insertMovie(movie);
         return movie;
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteMovie(@PathVariable("id") String id) {
+    public ResponseEntity<String> deleteMovie(@PathVariable("id") String id, HttpServletRequest request) throws Exception {
+        String token = request.getHeader("Authorization");
+        authenticate(token);
         movieService.deleteMovie(id);
         return ResponseEntity.ok().build();
     }
