@@ -55,14 +55,19 @@ public class MovieController {
     @GetMapping
     public ArrayList<Movie> getAllMovies(HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
         authenticate(authorisation);
+
+        String sql = "SELECT * FROM Movie";
+
+        ArrayList<Movie> movies = (ArrayList<Movie>) jdbcTemplate.query(sql, new MovieRowMapper());
+
         System.out.print("Movies shown!");
-        return movieService.getMovieList();
+        return movies;
     }
 
         @GetMapping("/show")
         public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
             // Optionally authenticate the user
-            // authenticate(authorisation);
+             authenticate(authorisation);
 
             // Query for a single movie using the movie_id
             try {
@@ -86,8 +91,16 @@ public class MovieController {
             if(!authenticationService.isUserAdmin(auth)) {
                 throw new AuthenticationException("You are not authorized to add movie");
             }
-        movieService.insertMovie(movie);
-        return movie;
+
+        String SQL = "INSERT INTO Movie (movie_id, name) VALUES (?, ?)";
+
+        var updatedRows = jdbcTemplate.update(SQL, movie.getMovie_id(), movie.getName());
+
+        if(updatedRows > 0) {
+            return movie;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found");
+        }
     }
 
     @DeleteMapping("/delete/{id}")
@@ -96,8 +109,13 @@ public class MovieController {
         if(!authenticationService.isUserAdmin(auth)) {
             throw new AuthenticationException("You are not authorized to add movie");
         }
-        movieService.deleteMovie(id);
-        return ResponseEntity.ok().build();
+        String SQL = "DELETE FROM Movie WHERE movie_id = ?";
+        var numbOfRowsDeleted = jdbcTemplate.update(SQL, id);
+        if (numbOfRowsDeleted > 0) {
+            return ResponseEntity.ok().build();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found");
+        }
     }
 
     private String authenticate(String token) throws Exception {
