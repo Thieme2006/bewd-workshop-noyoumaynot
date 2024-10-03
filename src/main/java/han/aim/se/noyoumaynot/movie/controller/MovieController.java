@@ -1,17 +1,23 @@
 package han.aim.se.noyoumaynot.movie.controller;
 
 import han.aim.se.noyoumaynot.movie.domain.Movie;
+import han.aim.se.noyoumaynot.movie.mapper.MovieRowMapper;
 import han.aim.se.noyoumaynot.movie.repository.UserToken;
 import han.aim.se.noyoumaynot.movie.service.AuthenticationService;
 import han.aim.se.noyoumaynot.movie.service.MovieService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.naming.AuthenticationException;
+import java.nio.channels.ScatteringByteChannel;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -23,6 +29,8 @@ public class MovieController {
     private String username = "Ghost_Unknown";
     private String password = "Testing12342";
     public String token;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     public MovieController(MovieService movieService, AuthenticationService authenticationService) {
@@ -51,12 +59,26 @@ public class MovieController {
         return movieService.getMovieList();
     }
 
-    @GetMapping("/show")
-    public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
-        authenticate(authorisation);
-            Movie movie = movieService.getMovieById(id);
-            return movie;
-    }
+        @GetMapping("/show")
+        public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
+            // Optionally authenticate the user
+            // authenticate(authorisation);
+
+            // Query for a single movie using the movie_id
+            try {
+                String sql = "SELECT * FROM Movie WHERE movie_id = ?";
+
+
+                // Use queryForObject to get a single movie
+                Movie movie = jdbcTemplate.queryForObject(sql, new Object[]{id}, new MovieRowMapper());
+
+                // Return the movie object
+                return movie;
+            } catch (EmptyResultDataAccessException e) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found or something else went wrong");
+            }
+        }
+
 
     @PostMapping("/add")
     public Movie addMovie(@RequestBody Movie movie, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
