@@ -65,49 +65,49 @@ public class MovieController {
         // authenticate(authorisation);
         System.out.println("GetMovieByID accessed");
         // Query for a single movie using the movie_id
-        try {
-            String sql = "SELECT * FROM Movie WHERE movie_id = ?";
-            System.out.println("Received ID: " + id);
+//            try {
+        String sql = "SELECT * FROM Movie WHERE movie_id = ?";
+        System.out.println("Received ID: " + id);
 //                // Use queryForObject to get a single movie
-            Movie movie = jdbcTemplate.queryForObject(sql, new Object[]{id}, new MovieRowMapper());
-            // Return the movie object
-            return movie;
-        } catch (
-                EmptyResultDataAccessException e) {
+        Movie movie = jdbcTemplate.queryForObject(sql, new Object[]{id}, new MovieRowMapper());
+
+        // Return the movie object
+        return movie;
+    } catch(
+    EmptyResultDataAccessException e)
             throw new
+    ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found or something else went wrong");
 
-                    ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found or something else went wrong");
-        }
-
-        @PostMapping("/add")
-        public Movie addMovie (@RequestBody Movie movie, HttpServletRequest
-        request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
-            var auth = authenticate(authorisation);
-            if (!authenticationService.isUserAdmin(auth)) {
-                throw new AuthenticationException("You are not authorized to add movie");
-            }
-            movieService.insertMovie(movie);
-            return movie;
-        }
-
-        @DeleteMapping("/delete/{id}")
-        public ResponseEntity<String> deleteMovie (@PathVariable("id") String id, HttpServletRequest
-        request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
-            var auth = authenticate(authorisation);
-            if (!authenticationService.isUserAdmin(auth)) {
-                throw new AuthenticationException("You are not authorized to add movie");
-            }
-            movieService.deleteMovie(id);
-            return ResponseEntity.ok().build();
-        }
-
-        private String authenticate (String token) throws Exception {
-            if (authenticationService.isValidToken(token)) {
-                return authenticationService.getUsername(token);
-            } else {
-                throw new AuthenticationException("Invalid token");
-            }
-        }
+}
 
 
+@PostMapping("/add")
+public Movie addMovie(@RequestBody Movie movie, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
+    var auth = authenticate(authorisation);
+    if (!authenticationService.isUserAdmin(auth)) {
+        throw new AuthenticationException("You are not authorized to add movie");
     }
+    movieService.insertMovie(movie);
+    return movie;
+}
+
+@DeleteMapping("/delete/{id}")
+public ResponseEntity<String> deleteMovie(@PathVariable("id") String id, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
+    var auth = authenticate(authorisation);
+    if (!authenticationService.isUserAdmin(auth)) {
+        throw new AuthenticationException("You are not authorized to add movie");
+    }
+    movieService.deleteMovie(id);
+    return ResponseEntity.ok().build();
+}
+
+private String authenticate(String token) throws Exception {
+    if (authenticationService.isValidToken(token)) {
+        return authenticationService.getUsername(token);
+    } else {
+        throw new AuthenticationException("Invalid token");
+    }
+}
+
+
+}
