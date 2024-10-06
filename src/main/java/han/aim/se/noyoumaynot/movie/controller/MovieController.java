@@ -66,24 +66,15 @@ public class MovieController {
 
         @GetMapping("/show")
         public Movie getMovieById(@RequestParam("id") String id, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
-            // Optionally authenticate the user
              authenticate(authorisation);
-
-            // Query for a single movie using the movie_id
-            try {
+             try {
                 String sql = "SELECT * FROM Movie WHERE movie_id = ?";
-
-
-                // Use queryForObject to get a single movie
                 Movie movie = jdbcTemplate.queryForObject(sql, new Object[]{id}, new MovieRowMapper());
-
-                // Return the movie object
                 return movie;
             } catch (EmptyResultDataAccessException e) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found or something else went wrong");
             }
         }
-
 
     @PostMapping("/add")
     public Movie addMovie(@RequestBody Movie movie, HttpServletRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) throws Exception {
@@ -91,11 +82,8 @@ public class MovieController {
             if(!authenticationService.isUserAdmin(auth)) {
                 throw new AuthenticationException("You are not authorized to add movie");
             }
-
         String SQL = "INSERT INTO Movie (movie_id, name) VALUES (?, ?)";
-
         var updatedRows = jdbcTemplate.update(SQL, movie.getMovie_id(), movie.getName());
-
         if(updatedRows > 0) {
             return movie;
         } else {
@@ -125,6 +113,4 @@ public class MovieController {
             throw new AuthenticationException("Invalid token");
         }
     }
-
-
 }

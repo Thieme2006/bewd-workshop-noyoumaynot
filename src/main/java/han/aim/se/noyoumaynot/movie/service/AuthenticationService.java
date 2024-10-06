@@ -1,5 +1,6 @@
 package han.aim.se.noyoumaynot.movie.service;
 
+import han.aim.se.noyoumaynot.movie.encryptor.JascryptConfig;
 import han.aim.se.noyoumaynot.movie.hasher.PasswordUtil;
 import han.aim.se.noyoumaynot.movie.mapper.HashRowMapper;
 import han.aim.se.noyoumaynot.movie.mapper.UserRowMapper;
@@ -19,15 +20,12 @@ import java.util.Optional;
 @Service
 public class AuthenticationService {
     private Map<String, User> users = new HashMap<>();
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JascryptConfig jascryptConfig;
 
     ArrayList<UserToken> userTokens = new ArrayList<>();
-
-
-    private String username = "Ghost_Unknown";
-    private String password = "Testing12342";
 
     public AuthenticationService() {
         Role adminRole = new Role("admin", true);
@@ -49,9 +47,13 @@ public class AuthenticationService {
             String salt = jdbcTemplate.queryForObject(SQLS, new Object[]{username}, String.class);
 
             if (user != null && salt != null) {
-                String hashedPassword = PasswordUtil.hashPassword(password, salt);
+                String decryptedSalt = jascryptConfig.encryptor().decrypt(salt);
 
-                if (hashedPassword.equals(user.getPassword())) {
+                String hashedPassword = PasswordUtil.hashPassword(password, decryptedSalt);
+
+                String decryptedPassword = jascryptConfig.encryptor().decrypt(user.getPassword());
+
+                if (hashedPassword.equals(decryptedPassword)) {
                     UserToken token = new UserToken(user.getUsername());
                     userTokens.add(token);
                     return token;
@@ -84,10 +86,17 @@ public class AuthenticationService {
     }
 
     public boolean isUserAdmin(String username) {
-        if (users.containsKey(username)) {
-            User user = users.get(username);
-            return user.getRole().isBeheerder();
+        try {
+            String SQL = "SELECT role FROM user_Table WHERE username = ?";
+            String role = jdbcTemplate.queryForObject(SQL, new Object[]{username}, String.class);
+            if ("admin".equalsIgnoreCase(role)) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
+
 }

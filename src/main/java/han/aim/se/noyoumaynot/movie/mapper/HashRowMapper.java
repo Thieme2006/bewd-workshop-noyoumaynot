@@ -1,7 +1,6 @@
 package han.aim.se.noyoumaynot.movie.mapper;
 
 import han.aim.se.noyoumaynot.movie.other.HashObject;
-import han.aim.se.noyoumaynot.movie.other.User;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
